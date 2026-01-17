@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Espace de {{ player.name }}</title>
+
+    <style>
+
+       /* ================= BASE ================= */
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            text-align: center;
+            color: #222;
+        }
+
+        h1 {
+            margin-top: 30px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 40px auto;
+        }
+
+        /* ================= CARTES JEUX ================= */
+
+        .game-block {
+            background: #ffffff;
+            padding: 25px 20px;
+            margin: 25px 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .game-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 18px;
+        }
+
+        /* ALIGNEMENT INPUT + OEIL */
+        .game-input {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* INPUT SCORE */
+        .score-input {
+            width: 80px;
+            height: 42px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        /* OEIL */
+        .eye-icon {
+            font-size: 20px;
+            cursor: pointer;
+            user-select: none;
+            line-height: 42px;
+            transition: transform 0.15s ease;
+        }
+
+        .eye-icon:hover {
+            transform: scale(1.15);
+        }
+
+        /* SCORES PANEL */
+        .scores-panel {
+            margin-top: 12px;
+            padding: 10px;
+            background: #eef2f5;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        /* ================= BOUTONS & LIENS ================= */
+
+        button {
+            margin-top: 30px;
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            background-color: #4CAF50;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        a {
+            display: block;
+            margin-top: 25px;
+            color: #555;
+            text-decoration: none;
+        }
+
+        /* ================= ZONE DANGEREUSE ================= */
+
+        .danger-zone {
+            margin-top: 45px;
+            padding: 26px 22px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #fff3f3, #ffecec);
+            border: 1px solid #f5c2c2;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .danger-zone h3 {
+            color: #c0392b;
+            margin-bottom: 18px;
+            font-size: 18px;
+        }
+
+        /* Form danger */
+        .danger-zone form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        /* Input confirmation */
+        .danger-zone input[type="password"] {
+            width: 100%;
+            max-width: 260px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid #d9534f;
+            text-align: center;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .danger-zone input[type="password"]:focus {
+            border-color: #c0392b;
+            box-shadow: 0 0 0 2px rgba(192,57,43,0.2);
+        }
+
+        /* Bouton suppression */
+        .delete-btn {
+            width: 100%;
+            max-width: 260px;
+            padding: 14px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #dc3545, #b52a37);
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .delete-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(220,53,69,0.4);
+        }
+
+        /* ================= DARK MODE ================= */
+
+        body.dark {
+            background-color: #121212;
+            color: #f1f1f1;
+        }
+
+        body.dark .game-block {
+            background-color: #1e1e1e;
+        }
+
+        body.dark .scores-panel {
+            background-color: #2a2a2a;
+            color: #e8f5e9;
+        }
+
+        body.dark input,
+        body.dark select {
+            background-color: #2a2a2a;
+            color: #ffffff;
+            border-color: #555;
+        }
+
+        body.dark input::placeholder {
+            color: #bbbbbb;
+        }
+
+        body.dark button {
+            background-color: #2e7d32;
+        }
+
+        /* Dark danger zone */
+        body.dark .danger-zone {
+            background: linear-gradient(135deg, #2a1e1e, #1f1414);
+            border-color: #8b3a3a;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+        }
+
+        body.dark .danger-zone h3 {
+            color: #ef5350;
+        }
+
+        body.dark .danger-zone input[type="password"] {
+            background-color: #2a2a2a;
+            color: #ffffff;
+            border-color: #ef5350;
+        }
+
+        </style>
+      
+        <script>
+
+    function toggleScores(gameId, playerId) {
+        const panel = document.getElementById("scores-" + gameId);
+
+        if (panel.style.display === "block") {
+            panel.style.display = "none";
+            return;
+        }
+
+        panel.style.display = "block";
+        panel.innerHTML = "Chargement...";
+
+        fetch(`/scores/${gameId}/${playerId}`)
+            .then(response => response.json())
+            .then(data => {
+                let html = "<ul style='list-style:none; padding:0; margin:0;'>";
+
+                data.forEach(row => {
+                    if (row.value === null) {
+                        html += `<li>${row.name} : ⏳ en attente</li>`;
+                    } else {
+                        html += `<li>${row.name} : ${row.value}</li>`;
+                    }
+                });
+
+                html += "</ul>";
+                panel.innerHTML = html;
+            });
+    }
+    </script>
+</head>
+
+<body>
+
+<h1>Espace de {{ player.name }}</h1>
+
+<div class="container">
+    <form method="post" action="/save_scores/{{ player.id }}">
+
+        {% for game in games %}
+            <div class="game-block">
+
+                <div class="game-title">
+                    {{ game.name }}
+                </div>
+
+                <div class="game-input">
+                    <input
+                        type="number"
+                        name="game_{{ game.id }}"
+                        min="1"
+                        max="7"
+                        value="{{ scores.get(game.id, '') }}"
+                        {% if locked %}disabled{% endif %}
+                        class="score-input"
+                    >
+
+                    <span
+                        class="eye-icon"
+                        onclick="toggleScores({{ game.id }}, {{ player.id }})"
+                        title="Voir les scores des autres joueurs"
+                    >
+                        👁️
+                    </span>
+                </div>
+
+                <div class="scores-panel" id="scores-{{ game.id }}"></div>
+
+            </div>
+        {% endfor %}
+
+        {% if not locked %}
+            <button type="submit">Enregistrer mes scores du jour</button>
+        {% endif %}
+
+    </form>
+
+    {% if locked %}
+        <a href="{{ url_for('edit_scores', player_id=player.id) }}">
+            ✏️ Modifier mes données
+        </a>
+    {% endif %}
+
+    <!-- ZONE DANGER -->
+    <div class="danger-zone">
+        <h3>⚠️ Zone dangereuse</h3>
+
+        <form action="{{ url_for('delete_player', player_id=player.id) }}"
+            method="POST"
+            onsubmit="return confirm('⚠️ Cette action est définitive. Supprimer le joueur ?');">
+
+            <input
+                type="password"
+                name="code"
+                placeholder="Confirme ton code"
+                required
+                class="danger-input"
+            >
+
+            <button type="submit" class="delete-btn">
+                🗑 Supprimer mon compte
+            </button>
+        </form>
+    </div>
+
+
+    <a href="/">⬅ Retour à l'accueil</a>
+</div>
+<script>
+(function () {
+    const theme = localStorage.getItem("theme");
+    if (theme === "dark") {
+        document.body.classList.add("dark");
+    }
+})();
+</script>
+
+</body>
+</html>

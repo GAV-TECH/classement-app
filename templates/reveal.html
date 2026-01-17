@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>🏆 Reveal – Classement d’hier</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: radial-gradient(circle at top, #1e1e2f, #0b0b14);
+    color: white;
+}
+
+/* STRUCTURE PAGE */
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* TITRE EN HAUT */
+.header {
+    text-align: center;
+    padding: 30px 0 10px;
+}
+
+.header h1 {
+    margin: 0;
+}
+
+/* ZONE CENTRALE */
+.center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* PODIUM */
+.podium {
+    display: flex;
+    align-items: flex-end;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.step {
+    width: 120px;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 10px;
+    font-weight: bold;
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.6s ease;
+}
+
+.step.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.rank {
+    font-size: 26px;
+    margin-bottom: 10px;
+}
+
+.name {
+    text-align: center;
+}
+
+.first {
+    height: 220px;
+    background: gold;
+    color: #222;
+}
+
+.second {
+    height: 180px;
+    background: silver;
+    color: #222;
+}
+
+.third {
+    height: 150px;
+    background: #cd7f32;
+    color: #222;
+}
+
+/* AUTRES */
+.others {
+    max-width: 400px;
+    text-align: left;
+}
+
+.others h3 {
+    text-align: center;
+}
+
+canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <!-- TITRE -->
+    <div class="header">
+        <h1>🏆 Classement d’hier</h1>
+    </div>
+
+    <!-- CENTRE -->
+    <div class="center">
+
+        <!-- PODIUM -->
+        <div class="podium">
+            <div class="step second" id="second">
+                <div class="rank">2</div>
+                <div class="name"></div>
+            </div>
+
+            <div class="step first" id="first">
+                <div class="rank">1</div>
+                <div class="name"></div>
+            </div>
+
+            <div class="step third" id="third">
+                <div class="rank">3</div>
+                <div class="name"></div>
+            </div>
+        </div>
+
+        <!-- AUTRES -->
+        <div class="others" id="others"></div>
+
+    </div>
+</div>
+
+<canvas id="confetti"></canvas>
+
+<script>
+/* CONFETTIS */
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let confettis = [];
+
+function launchConfetti() {
+    for (let i = 0; i < 200; i++) {
+        confettis.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height - canvas.height,
+            r: Math.random() * 6 + 4,
+            c: `hsl(${Math.random()*360},100%,50%)`,
+            s: Math.random() * 3 + 2
+        });
+    }
+}
+
+function animateConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    confettis.forEach(c => {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+        ctx.fillStyle = c.c;
+        ctx.fill();
+        c.y += c.s;
+        if (c.y > canvas.height) c.y = -10;
+    });
+    requestAnimationFrame(animateConfetti);
+}
+
+/* FETCH CLASSEMENT */
+fetch("/leaderboard/yesterday/global")
+    .then(r => r.json())
+    .then(data => {
+        if (!data || data.length === 0) return;
+
+        const [first, second, third, ...others] = data;
+
+        setTimeout(() => {
+            if (first) {
+                document.querySelector("#first .name").textContent = first.name;
+                document.getElementById("first").classList.add("show");
+            }
+        }, 400);
+
+        setTimeout(() => {
+            if (second) {
+                document.querySelector("#second .name").textContent = second.name;
+                document.getElementById("second").classList.add("show");
+            }
+        }, 800);
+
+        setTimeout(() => {
+            if (third) {
+                document.querySelector("#third .name").textContent = third.name;
+                document.getElementById("third").classList.add("show");
+            }
+        }, 1200);
+
+        setTimeout(() => {
+            launchConfetti();
+            animateConfetti();
+        }, 1500);
+
+        if (others.length > 0) {
+            let html = "<h3>Autres joueurs</h3><ol>";
+            others.forEach((p, i) => {
+                html += `<li>${i + 4} — ${p.name}</li>`;
+            });
+            html += "</ol>";
+            document.getElementById("others").innerHTML = html;
+        }
+    });
+</script>
+
+</body>
+</html>
+

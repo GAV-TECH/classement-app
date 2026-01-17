@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+<meta charset="UTF-8">
+<title>Accueil – Classement</title>
+
+<style>
+/* ===== BASE ===== */
+/* ===== BASE ===== */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f8;
+    color: #222;
+    text-align: center;
+}
+
+h1 { margin-top: 30px; }
+
+.container {
+    max-width: 500px;
+    margin: 40px auto;
+}
+
+.box {
+    background: #ffffff;
+    padding: 20px;
+    margin: 25px 0;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* ===== BOUTONS ===== */
+button {
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background-color: #2e7d32;
+    color: #ffffff;
+    margin: 6px 0;
+    width: 100%;
+}
+
+/* Boutons sections (Par jeu) */
+.section-toggle {
+    background-color: #e9ecef;
+    color: #1b5e20;
+    font-weight: bold;
+}
+
+/* ===== PANNEAUX DE SCORES ===== */
+.scores-panel {
+    background: #eef2f5;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 10px;
+    text-align: left;
+}
+
+/* ===== LISTES ===== */
+ul { list-style: none; padding: 0; }
+li { margin: 6px 0; }
+
+/* ===== LIENS ===== */
+a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* ===== STATUT JOUEURS ===== */
+.top-right {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    width: 180px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.top-right li {
+    display: flex;
+    justify-content: space-between;
+}
+
+.status.ok { color: #2e7d32; }
+.status.ko { color: #c62828; }
+
+/* ===== BOUTON DARK MODE ===== */
+#dark-toggle {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.08);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#dark-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+/* ================================================================= */
+/* ============================ DARK MODE =========================== */
+/* ================================================================= */
+
+body.dark {
+    background-color: #121212;
+    color: #f1f1f1;
+}
+
+/* Cartes */
+body.dark .box,
+body.dark .top-right {
+    background-color: #1e1e1e;
+}
+
+/* Textes */
+body.dark a,
+body.dark li,
+body.dark h2,
+body.dark h3 {
+    color: #f1f1f1;
+}
+
+/* Boutons */
+body.dark button {
+    background-color: #2e7d32;
+    color: #ffffff;
+}
+
+/* Boutons "Par jeu" */
+body.dark .section-toggle {
+    background-color: #2e7d32;
+    color: #ffffff;
+}
+
+/* Panneaux scores */
+body.dark .scores-panel {
+    background-color: #2a2a2a;
+}
+
+/* Statuts */
+body.dark .status.ok { color: #66bb6a; }
+body.dark .status.ko { color: #ef5350; }
+
+/* ================================================================= */
+/* ====================== COULEUR DES RÉSULTATS ===================== */
+/* ================================================================= */
+
+/* Mode clair */
+.scores-panel,
+.scores-panel li,
+.scores-panel em {
+    color: #1b5e20;
+    font-weight: 500;
+}
+
+/* Mode sombre */
+body.dark .scores-panel,
+body.dark .scores-panel li,
+body.dark .scores-panel em {
+    color: #e8f5e9;
+}
+
+/* ================================================================= */
+/* =========================== REVEAL =============================== */
+/* ================================================================= */
+
+.reveal-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.reveal-btn {
+    width: 100%;
+    max-width: 500px;
+    margin: 8px 0;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    color: #ffffff;
+}
+
+/* Reveal jour */
+.reveal-day {
+    background-color: #2e7d32;
+}
+
+/* Reveal semaine */
+.reveal-week {
+    background-color: #d4af37;
+    color: #222222;
+}
+
+body.dark .reveal-week {
+    background-color: #c9a227;
+    color: #222222;
+}
+
+.eye-icon {
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.eye-icon:hover {
+    transform: scale(1.2);
+}
+
+.player-stats-panel {
+    margin-top: 8px;
+    padding: 12px;
+    border-radius: 10px;
+    background: #eef2f5;
+    font-size: 14px;
+    text-align: left;
+}
+
+/* Dark mode */
+body.dark .player-stats-panel {
+    background: #2a2a2a;
+}
+
+/* ===== MODAL OVERLAY ===== */
+
+
+@keyframes modalIn {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+
+
+/* Dark mode */
+body.dark .modal {
+    background: #1e1e1e;
+    color: #f1f1f1;
+}
+
+/* ================= MODAL STATS JOUEUR ================= */
+
+#player-modal {
+    position: relative;
+    background: #ffffff;
+
+    width: 92%;               /* ⬅️ un peu plus large */
+    max-width: 560px;         /* ⬅️ plus confortable */
+
+    padding: 45px 28px 28px;  /* ⬅️ PLUS DE PLACE EN HAUT */
+
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+}
+
+
+/* Titre */
+#player-modal h2 {
+    margin-top: 0;
+    padding-top: 6px;
+    text-align: center;
+}
+
+#player-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 999;
+
+    display: none;           /* caché par défaut */
+    justify-content: center;
+    align-items: center;
+}
+
+
+#close-player-modal {
+    position: absolute;
+    top: 10px;
+    right: 16px;
+
+    background: none;
+    border: none;
+
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1;
+
+    color: #333;
+    cursor: pointer;
+    z-index: 10;
+}
+
+
+
+
+/* DARK MODE */
+body.dark #player-modal {
+    background: #1e1e1e;
+    color: #f1f1f1;
+}
+
+body.dark #close-player-modal {
+    color: #ffffff;
+}
+
+
+
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+<!-- DARK MODE -->
+<button id="dark-toggle" onclick="toggleDarkMode()" title="Mode clair / sombre">
+    <span id="dark-icon">🌗</span>
+</button>
+
+<!-- REVEALS -->
+<div class="reveal-container">
+    <a href="{{ url_for('reveal') }}" class="reveal-btn reveal-day">
+        🎉 Reveal – Classement du jour
+    </a>
+
+  {% if show_reveal_week %}
+    <a href="{{ url_for('reveal_week') }}" class="reveal-btn reveal-week">
+        🏆 Reveal – Classement de la semaine
+    </a>
+    {% endif %}
+
+</div>
+
+
+
+<!-- STATUT JOUEURS -->
+<div class="top-right">
+    <h3>👥 Joueurs</h3>
+    <ul>
+        {% for p in players_status %}
+       <li style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="player-name">{{ p.name }}</span>
+
+            <div style="display:flex; gap:8px; align-items:center;">
+    {% if p.done %}
+        <span class="status ok">✔️</span>
+    {% else %}
+        <span class="status ko">❌</span>
+    {% endif %}
+</div>
+
+
+           
+
+
+<!-- PANNEAU STATS JOUEUR -->
+<div id="player-stats-{{ p.id }}"
+     class="player-stats-panel"
+     style="display:none;"></div>
+
+        {% endfor %}
+    </ul>
+</div>
+
+<h1>🎮 Qui est le meilleur ?</h1>
+
+<div class="container">
+
+<!-- JOUEURS -->
+<div class="box">
+    <h2>👥 Joueurs</h2>
+    <ul>
+        {% for player in players %}
+<li style="display:flex; justify-content:space-between; align-items:center;">
+    <a href="{{ url_for('login', player_id=player.id) }}">
+        {{ player.name }}
+    </a>
+
+    <span class="eye-icon"
+          onclick="openPlayerStats({{ player.id }}, '{{ player.name }}')"
+          title="Voir les statistiques">
+        👁️
+    </span>
+</li>
+{% endfor %}
+
+    </ul>
+    <a href="{{ url_for('create_player') }}">➕ Créer un joueur</a>
+</div>
+
+<!-- JEUX -->
+<div class="box">
+    <h2>🎮 Jeux</h2>
+    <ul>
+        {% for game in games %}
+        <li style="display:flex; justify-content:space-between; align-items:center;">
+            <span>{{ game.name }}</span>
+
+            <span class="eye-icon"
+                  onclick="toggleGameStats({{ game.id }})"
+                  title="Voir statistiques du jeu">
+                👁️
+            </span>
+        </li>
+
+        <!-- PANNEAU STATS JEU -->
+        <div id="game-stats-{{ game.id }}"
+             class="player-stats-panel"
+             style="display:none;"></div>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- CLASSEMENTS -->
+<div class="box">
+<h2>📊 Classements</h2>
+
+<button onclick="toggleLeaderboardDayGlobal()">🥇 Classement du jour – Tous jeux confondus</button>
+<div id="day-global" class="scores-panel" style="display:none;"></div>
+
+<button onclick="toggleLeaderboardWeekGlobal()">🏆 Classement de la semaine – Tous jeux confondus</button>
+<div id="week-global" class="scores-panel" style="display:none;"></div>
+
+<hr>
+
+<button class="section-toggle" onclick="toggleBlock('day-games')">
+▶️ Classement du jour – Par jeu
+</button>
+
+<div id="day-games" style="display:none;">
+{% for game in games %}
+<button onclick="toggleLeaderboardGame({{ game.id }})">{{ game.name }}</button>
+<div id="leaderboard-game-{{ game.id }}" class="scores-panel" style="display:none;"></div>
+{% endfor %}
+</div>
+
+<hr>
+
+<button class="section-toggle" onclick="toggleBlock('week-games')">
+▶️ Classement de la semaine – Par jeu
+</button>
+
+<div id="week-games" style="display:none;">
+{% for game in games %}
+<button onclick="toggleLeaderboardWeekGame({{ game.id }})">{{ game.name }}</button>
+<div id="leaderboard-week-game-{{ game.id }}" class="scores-panel" style="display:none;"></div>
+{% endfor %}
+</div>
+</div>
+<!-- GRAPH STATISTIQUES -->
+<div class="box" style="max-width: 420px; margin: 25px auto;">
+    <h2>📈 Meilleur joueur de tous les temps</h2>
+    <div style="height:180px;">
+        <canvas id="avgGameChart"></canvas>
+    </div>
+</div>
+<!-- ================= MODAL STATS JOUEUR ================= -->
+<div id="player-modal-overlay" style="display:none;">
+    <div id="player-modal">
+
+        <!-- CROIX FERMETURE -->
+        <button id="close-player-modal" onclick="closePlayerStats()">✕</button>
+
+        <!-- CONTENU -->
+        <h2 id="player-modal-title">Statistiques joueur</h2>
+
+        <div id="player-modal-content">
+            Chargement…
+        </div>
+    </div>
+</div>
+
+</div>
+
+
+<!-- JS -->
+<script>
+function toggleBlock(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === "block" ? "none" : "block";
+}
+
+function togglePanel(panel, url, empty) {
+    if (panel.style.display === "block") {
+        panel.style.display = "none";
+        panel.innerHTML = "";
+        return;
+    }
+    panel.style.display = "block";
+    panel.innerHTML = "Chargement...";
+    fetch(url).then(r => r.json()).then(data => {
+        if (!data.length) {
+            panel.innerHTML = `<em>${empty}</em>`;
+            return;
+        }
+        let html = "<ol>";
+        data.forEach(r => html += `<li>${r.name} — ${r.score ?? "⏳"}</li>`);
+        html += "</ol>";
+        panel.innerHTML = html;
+    });
+}
+
+function toggleLeaderboardDayGlobal() {
+    togglePanel(dayGlobal, "/leaderboard/day/global", "Aucun classement aujourd’hui");
+}
+function toggleLeaderboardWeekGlobal() {
+    togglePanel(weekGlobal, "/leaderboard/week/global", "Aucun classement cette semaine");
+}
+function toggleLeaderboardGame(id) {
+    togglePanel(
+        document.getElementById("leaderboard-game-" + id),
+        `/leaderboard/day/game/${id}`,
+        "Aucun score aujourd’hui"
+    );
+}
+function toggleLeaderboardWeekGame(id) {
+    togglePanel(
+        document.getElementById("leaderboard-week-game-" + id),
+        `/leaderboard/week/game/${id}`,
+        "Aucun score cette semaine"
+    );
+}
+
+const dayGlobal = document.getElementById("day-global");
+const weekGlobal = document.getElementById("week-global");
+
+function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+    localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+    if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark");
+    }
+});
+
+let openedPlayerStats = null;
+
+
+
+function openPlayerStats(playerId, playerName) {
+    const overlay = document.getElementById("player-modal-overlay");
+    const content = document.getElementById("player-modal-content");
+    const title = document.getElementById("player-modal-title");
+
+    title.innerText = "📊 Statistiques – " + playerName;
+    content.innerHTML = "Chargement des statistiques…";
+
+    overlay.style.display = "flex";
+
+    fetch(`/stats/player/${playerId}`)
+        .then(r => r.json())
+        .then(data => {
+            content.innerHTML = `
+                <strong>📊 Performance globale</strong><br>
+                🎯 Moyenne tentatives : <strong>${data.avg_attempts ?? "—"}</strong><br><br>
+
+                <strong>🏅 Podiums – Classement du jour</strong><br>
+                🥇 ${data.podium_day.first} · 🥈 ${data.podium_day.second} · 🥉 ${data.podium_day.third}<br><br>
+
+                <strong>🏅 Podiums – Classement de la semaine</strong><br>
+                🥇 ${data.podium_week.first} · 🥈 ${data.podium_week.second} · 🥉 ${data.podium_week.third}<br><br>
+
+                ⭐ Best game : <strong>${data.best_game ?? "—"}</strong><br>
+                ⚠️ Worst game : <strong>${data.worst_game ?? "—"}</strong>
+            `;
+        })
+        .catch(() => {
+            content.innerHTML = "<em>Erreur de chargement</em>";
+        });
+}
+
+
+function closePlayerStats() {
+    document.getElementById("player-modal-overlay").style.display = "none";
+}
+
+
+
+
+
+let openedGameStats = null;
+
+function toggleGameStats(gameId) {
+    const panel = document.getElementById("game-stats-" + gameId);
+
+    // Fermer autre panneau ouvert
+    if (openedGameStats && openedGameStats !== panel) {
+        openedGameStats.style.display = "none";
+        openedGameStats.innerHTML = "";
+    }
+
+    // Toggle
+    if (panel.style.display === "block") {
+        panel.style.display = "none";
+        panel.innerHTML = "";
+        openedGameStats = null;
+        return;
+    }
+
+    panel.style.display = "block";
+    panel.innerHTML = "Chargement des statistiques…";
+    openedGameStats = panel;
+
+    fetch(`/stats/game/${gameId}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                panel.innerHTML = "<em>Aucune donnée disponible</em>";
+                return;
+            }
+
+            panel.innerHTML = `
+                <strong>📊 Statistiques du jeu</strong><br><br>
+                🎯 Moyenne tentatives : 
+                <strong>${data.avg_score ?? "—"}</strong><br><br>
+                ⭐ Meilleur joueur :
+                <strong>${data.best_player ?? "—"}</strong>
+            `;
+        })
+        .catch(() => {
+            panel.innerHTML = "<em>Erreur de chargement</em>";
+        });
+}
+
+
+fetch("/stats/chart/avg-global")
+    .then(r => r.json())
+    .then(data => {
+        const ctx = document.getElementById("avgGameChart");
+        if (!ctx || data.length === 0) return;
+
+        new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: data.map(d => d.player),
+                datasets: [{
+                    label: "Moyenne de tentatives (tous jeux confondus)",
+                    data: data.map(d => d.avg),
+                    backgroundColor: "#2e7d32",
+                    borderRadius: 8
+                }]
+            },
+           options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: "Moyenne de tentatives par joueur",
+                        font: {
+                            size: 14,
+                            weight: "bold"
+                        }
+                    }
+                },
+
+                scales: {
+                    y: {
+                        beginAtZero: true,     // 🔑 0 en bas
+                        reverse: false,       // 🔑 ordre normal
+                        title: {
+                            display: true,
+                            text: "Tentatives moyennes",
+                            font: {
+                                size: 12,
+                                weight: "bold"
+                            }
+                        },
+                        ticks: {
+                            stepSize: 1,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 11,
+                                weight: "bold"
+                            }
+                        }
+                    }
+                }
+            }
+
+        });
+    });
+
+</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Créer un joueur</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 420px;
+            margin: 100px auto;
+        }
+
+        .box {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 14px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+        }
+
+        h1 {
+            margin-bottom: 30px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            display: block;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto 20px auto;
+
+            padding: 14px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: 2px solid #000;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            max-width: 320px;
+            margin: 10px auto 25px auto;
+
+            padding: 14px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 10px;
+            color: #555;
+            text-decoration: none;
+        }
+        body.dark {
+            background-color: #121212;
+            color: #f1f1f1;
+        }
+
+        body.dark .box,
+        body.dark .card,
+        body.dark .panel {
+            background-color: #1e1e1e;
+            }
+
+            body.dark input,
+            body.dark select {
+                background-color: #2a2a2a;
+                color: #ffffff;
+                border-color: #555;
+            }
+
+            body.dark button {
+                background-color: #2e7d32;
+            }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="box">
+        <h1>➕ Créer un joueur</h1>
+
+        <form method="post">
+            <input type="text"
+                   name="name"
+                   placeholder="Nom du joueur"
+                   required>
+
+            <input type="password"
+                   name="code"
+                   placeholder="Code secret"
+                   required>
+
+            <button type="submit">
+                Créer le joueur
+            </button>
+        </form>
+
+        <a href="{{ url_for('index') }}">← Retour à l’accueil</a>
+    </div>
+</div>
+<script>
+(function () {
+    const theme = localStorage.getItem("theme");
+    if (theme === "dark") {
+        document.body.classList.add("dark");
+    }
+})();
+</script>
+
+</body>
+</html>

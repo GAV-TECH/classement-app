@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>🏆 Reveal – Classement de la semaine</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: radial-gradient(circle at top, #0d0d16, #050509);
+    color: #fff;
+    overflow: hidden;
+    text-align: center;
+}
+
+h1 {
+    margin-top: 40px;
+    font-size: 36px;
+    letter-spacing: 2px;
+    z-index: 10;
+    position: relative;
+}
+
+/* ================= BRUME ================= */
+.fog-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    background: radial-gradient(
+        ellipse 60% 45% at 50% 45%,
+        rgba(255,255,255,0.35),
+        rgba(255,255,255,0.18) 35%,
+        rgba(0,0,0,0.85) 65%,
+        rgba(0,0,0,0.98) 100%
+    );
+    filter: blur(70px);
+    opacity: 0;
+    transition: opacity 2s ease;
+}
+
+.fog-layer.show { opacity: 1; }
+
+/* ================= PODIUM ================= */
+.podium-wrapper {
+    height: calc(100vh - 140px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.podium {
+    display: flex;
+    align-items: flex-end;
+    gap: 40px;
+    filter: brightness(0.6);
+    transform: scale(0.92);
+    transition: all 1.5s ease;
+}
+
+.podium.revealed {
+    filter: brightness(1);
+    transform: scale(1);
+}
+
+.step {
+    width: 160px;
+    border-radius: 18px 18px 0 0;
+    padding: 15px;
+    opacity: 0;
+    transform: translateY(60px);
+    transition: all 0.8s ease;
+    box-shadow: 0 0 40px rgba(255,215,0,0.35);
+}
+
+.step.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.first {
+    height: 300px;
+    background: linear-gradient(180deg, #fff1a8, #d4af37);
+    color: #222;
+}
+.second {
+    height: 230px;
+    background: linear-gradient(180deg, #f7f7f7, #cfcfcf);
+    color: #222;
+}
+.third {
+    height: 200px;
+    background: linear-gradient(180deg, #f3c18b, #cd7f32);
+    color: #222;
+}
+
+.rank {
+    font-size: 42px;
+    font-weight: bold;
+}
+.name {
+    margin-top: 12px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.others {
+    position: absolute;
+    bottom: 40px;
+    max-width: 420px;
+    background: rgba(0,0,0,0.45);
+    padding: 16px;
+    border-radius: 12px;
+}
+
+canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 20;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🏆 Classement de la semaine</h1>
+
+<div class="fog-layer"></div>
+
+<div class="podium-wrapper">
+    <div class="podium">
+        <div class="step second" id="place-2">
+            <div class="rank">2</div>
+            <div class="name" id="name-2">—</div>
+        </div>
+
+        <div class="step first" id="place-1">
+            <div class="rank">1</div>
+            <div class="name" id="name-1">—</div>
+        </div>
+
+        <div class="step third" id="place-3">
+            <div class="rank">3</div>
+            <div class="name" id="name-3">—</div>
+        </div>
+    </div>
+</div>
+
+<div class="others" id="others"></div>
+<canvas id="fireworks"></canvas>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    /* ================= CANVAS ================= */
+    const canvas = document.getElementById("fireworks");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    let particles = [];
+
+    /* ================= FEUX D’ARTIFICE ================= */
+    function createFireworkBurst(x, y, amount = 260) {
+        for (let i = 0; i < amount; i++) {
+            particles.push({
+                x, y,
+                vx: (Math.random() - 0.5) * 14,
+                vy: (Math.random() - 0.5) * 14,
+                life: 220 + Math.random() * 80,
+                color: `hsl(${Math.random()*360},100%,60%)`,
+                size: 3
+            });
+        }
+    }
+
+    function startFireworks(duration = 10000) {
+        const interval = setInterval(() => {
+            createFireworkBurst(canvas.width / 2, canvas.height / 3);
+        }, 600);
+
+        setTimeout(() => clearInterval(interval), duration);
+    }
+
+    function animateFireworks() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach((p, i) => {
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x, p.y, p.size, p.size);
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.08;
+            p.life--;
+            if (p.life <= 0) particles.splice(i, 1);
+        });
+        requestAnimationFrame(animateFireworks);
+    }
+    animateFireworks();
+
+    /* ================= REVEAL ================= */
+    const fog = document.querySelector(".fog-layer");
+    const podium = document.querySelector(".podium");
+
+    function revealPlace(n) {
+        document.getElementById("place-" + n).classList.add("show");
+    }
+
+    fetch("/leaderboard/week/global")
+        .then(r => r.json())
+        .then(data => {
+            if (!data || !data.length) return;
+
+            if (data[0]) document.getElementById("name-1").innerText = data[0].name;
+            if (data[1]) document.getElementById("name-2").innerText = data[1].name;
+            if (data[2]) document.getElementById("name-3").innerText = data[2].name;
+
+            setTimeout(() => fog.classList.add("show"), 300);
+            setTimeout(() => podium.classList.add("revealed"), 1200);
+            setTimeout(() => revealPlace(3), 2200);
+            setTimeout(() => revealPlace(2), 3500);
+            setTimeout(() => revealPlace(1), 5200);
+            setTimeout(() => startFireworks(12000), 6000);
+        });
+
+});
+</script>
+
+</body>
+</html>
