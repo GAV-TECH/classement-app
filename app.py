@@ -77,6 +77,7 @@ init_db()
 def index():
     conn = get_db()
 
+
     players = conn.execute(
         "SELECT id, name FROM players ORDER BY name"
     ).fetchall()
