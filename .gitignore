@@ -1,4 +1,10 @@
 __pycache__/
 *.pyc
 .env
-database.db
+
+# Bases de données
+*.db
+
+# Secrets Google Drive
+gdrive_auth.json
+gdrive_credentials.json
