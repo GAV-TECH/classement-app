@@ -3,8 +3,11 @@ import sqlite3
 from datetime import datetime
 import os
 
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "database.db")
+
+print(">>> DB_PATH =", DB_PATH)
 
 app = Flask(__name__)
 
