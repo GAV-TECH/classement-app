@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import sqlite3
 from datetime import datetime
-
+DB_PATH = "/home/GAVTECH/classement_app/database.db"
 app = Flask(__name__)
 DATABASE = "database.db"
 
@@ -10,7 +10,7 @@ DATABASE = "database.db"
 # DATABASE
 # =====================
 def get_db():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -73,7 +73,8 @@ def init_db():
 # =====================
 @app.route("/")
 def index():
-    conn = get_db()
+    conn = sqlite3.connect(DB_PATH)
+
 
     players = conn.execute(
         "SELECT id, name FROM players ORDER BY name"
@@ -600,6 +601,9 @@ def debug_days():
     """).fetchall()
     conn.close()
     return jsonify([dict(r) for r in rows])
+
+
+
 
 # =====================
 # START
