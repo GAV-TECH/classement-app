@@ -1,0 +1,21 @@
+name: Daily DB Backup
+
+on:
+  schedule:
+    - cron: '0 0 * * *'   # tous les jours à minuit UTC
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run backup on PythonAnywhere
+        run: |
+          curl -X POST "https://www.pythonanywhere.com/api/v0/user/${{ secrets.PA_USERNAME }}/consoles/" \
+          -H "Authorization: Token ${{ secrets.PA_API_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "executable": "bash",
+            "arguments": ["-lc", "cd ~/classement_app && source venv/bin/activate && python backup_db.py"]
+          }'
