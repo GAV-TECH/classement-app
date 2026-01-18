@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import sqlite3
 from datetime import datetime
-DB_PATH = "/home/GAVTECH/classement_app/database.db"
-app = Flask(__name__)
-DATABASE = "database.db"
+import os
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "database.db")
+
+app = Flask(__name__)
 
 # =====================
 # DATABASE
@@ -67,14 +69,13 @@ def init_db():
     conn.commit()
     conn.close()
 
-
+init_db()
 # =====================
 # PAGES
 # =====================
 @app.route("/")
 def index():
-    conn = sqlite3.connect(DB_PATH)
-
+    conn = get_db()
 
     players = conn.execute(
         "SELECT id, name FROM players ORDER BY name"
@@ -375,6 +376,29 @@ def leaderboard_week_global():
 
     return jsonify([
         {"rank": i + 1, "name": r["name"], "score": r["total"]}
+        for i, r in enumerate(rows)
+    ])
+
+@app.route("/leaderboard/week/game/<int:game_id>")
+def leaderboard_week_game(game_id):
+    conn = get_db()
+
+    rows = conn.execute("""
+        SELECT p.name, s.value
+        FROM players p
+        LEFT JOIN scores s
+            ON p.id = s.player_id
+            AND s.game_id = ?
+            AND s.date >= DATE('now', 'localtime', '-6 days', 'weekday 1')
+        ORDER BY
+            CASE WHEN s.value IS NULL THEN 1 ELSE 0 END,
+            s.value ASC
+    """, (game_id,)).fetchall()
+
+    conn.close()
+
+    return jsonify([
+        {"rank": i + 1, "name": r["name"], "score": r["value"]}
         for i, r in enumerate(rows)
     ])
 
